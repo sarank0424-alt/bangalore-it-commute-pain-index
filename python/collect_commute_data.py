@@ -28,6 +28,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Path where the raw dataset will be saved
 CSV_FILE = PROJECT_ROOT / "data" / "bangalore_commute_raw.csv"
+# Create the data folder if it does not exist
+CSV_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 
 # --------------------------------------------------
