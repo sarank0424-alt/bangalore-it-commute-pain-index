@@ -63,13 +63,30 @@ jobs:
             fi
           fi
 
-      - name: Collect commute data
-        env:
-          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-        run: |
-          python python/collect_commute_data.py "${{ steps.slot.outputs.slot }}"
+     - name: Check collection date
+  id: date_check
+  shell: bash
+  run: |
+    TODAY=$(TZ=Asia/Kolkata date +%Y-%m-%d)
 
+    echo "Current IST date: $TODAY"
+
+    if [[ "$TODAY" < "2026-07-23" || "$TODAY" > "2026-07-29" ]]; then
+      echo "collect=false" >> "$GITHUB_OUTPUT"
+      echo "Outside official 7-day collection window."
+    else
+      echo "collect=true" >> "$GITHUB_OUTPUT"
+      echo "Inside official 7-day collection window."
+    fi
+
+  - name: Collect commute data
+  if: steps.date_check.outputs.collect == 'true'
+  env:
+    GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+  run: |
+    python python/collect_commute_data.py "${{ steps.slot.outputs.slot }}"
       - name: Commit collected data
+        if: steps.date_check.outputs.collect == 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
