@@ -3,6 +3,7 @@ import csv
 import sys
 import requests
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -147,7 +148,7 @@ def collection_already_exists(time_slot):
     if not CSV_FILE.exists():
         return False
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d")
 
     with open(
         CSV_FILE,
@@ -231,7 +232,7 @@ def collect_data(time_slot):
                 "destination",
                 "distance_km",
                 "duration_minutes",
-                "static_duration",
+                "static_duration_minutes",
                 "status"
             ])
 
@@ -287,7 +288,7 @@ def collect_data(time_slot):
 
 
                 # Get current date and time
-                now = datetime.now()
+                now = datetime.now(ZoneInfo("Asia/Kolkata"))
 
 
                 # Save one route as one CSV row
