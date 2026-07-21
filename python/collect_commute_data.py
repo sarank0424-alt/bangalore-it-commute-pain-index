@@ -231,7 +231,7 @@ def collect_data(time_slot):
                 "destination",
                 "distance_km",
                 "duration_minutes",
-                "static_duration_minutes",
+                "static_duration",
                 "status"
             ])
 
