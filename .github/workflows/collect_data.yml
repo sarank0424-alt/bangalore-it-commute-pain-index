@@ -2,13 +2,13 @@ name: Collect Bangalore Commute Data
 
 on:
   schedule:
-    # 8:00 AM IST = 2:30 AM UTC
+    # 8:00 AM IST
     - cron: "30 2 * * *"
 
-    # 12:00 PM IST = 6:30 AM UTC
+    # 12:00 PM IST
     - cron: "30 6 * * *"
 
-    # 6:00 PM IST = 12:30 PM UTC
+    # 6:00 PM IST
     - cron: "30 12 * * *"
 
   workflow_dispatch:
@@ -30,7 +30,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -63,28 +62,29 @@ jobs:
             fi
           fi
 
-     - name: Check collection date
-  id: date_check
-  shell: bash
-  run: |
-    TODAY=$(TZ=Asia/Kolkata date +%Y-%m-%d)
+      - name: Check collection date
+        id: date_check
+        shell: bash
+        run: |
+          TODAY=$(TZ=Asia/Kolkata date +%Y-%m-%d)
 
-    echo "Current IST date: $TODAY"
+          echo "Current IST date: $TODAY"
 
-    if [[ "$TODAY" < "2026-07-23" || "$TODAY" > "2026-07-29" ]]; then
-      echo "collect=false" >> "$GITHUB_OUTPUT"
-      echo "Outside official 7-day collection window."
-    else
-      echo "collect=true" >> "$GITHUB_OUTPUT"
-      echo "Inside official 7-day collection window."
-    fi
+          if [[ "$TODAY" < "2026-07-23" || "$TODAY" > "2026-07-29" ]]; then
+            echo "collect=false" >> "$GITHUB_OUTPUT"
+            echo "Outside official 7-day collection window."
+          else
+            echo "collect=true" >> "$GITHUB_OUTPUT"
+            echo "Inside official 7-day collection window."
+          fi
 
-  - name: Collect commute data
-  if: steps.date_check.outputs.collect == 'true'
-  env:
-    GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-  run: |
-    python python/collect_commute_data.py "${{ steps.slot.outputs.slot }}"
+      - name: Collect commute data
+        if: steps.date_check.outputs.collect == 'true'
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          python python/collect_commute_data.py "${{ steps.slot.outputs.slot }}"
+
       - name: Commit collected data
         if: steps.date_check.outputs.collect == 'true'
         shell: bash
