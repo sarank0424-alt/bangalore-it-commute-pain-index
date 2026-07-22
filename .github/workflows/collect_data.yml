@@ -47,19 +47,15 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "slot=${{ inputs.time_slot }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 2 * * *" ]; then
+            echo "slot=morning_peak" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 6 * * *" ]; then
+            echo "slot=baseline" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 12 * * *" ]; then
+            echo "slot=evening_peak" >> "$GITHUB_OUTPUT"
           else
-            HOUR=$(date -u +%H)
-
-            if [ "$HOUR" = "02" ]; then
-              echo "slot=morning_peak" >> "$GITHUB_OUTPUT"
-            elif [ "$HOUR" = "06" ]; then
-              echo "slot=baseline" >> "$GITHUB_OUTPUT"
-            elif [ "$HOUR" = "12" ]; then
-              echo "slot=evening_peak" >> "$GITHUB_OUTPUT"
-            else
-              echo "Unexpected scheduled execution time."
-              exit 1
-            fi
+            echo "Unknown workflow trigger."
+            exit 1
           fi
 
       - name: Check collection date
@@ -67,7 +63,6 @@ jobs:
         shell: bash
         run: |
           TODAY=$(TZ=Asia/Kolkata date +%Y-%m-%d)
-
           echo "Current IST date: $TODAY"
 
           if [[ "$TODAY" < "2026-07-23" || "$TODAY" > "2026-07-29" ]]; then
